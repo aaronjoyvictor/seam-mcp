@@ -4,29 +4,24 @@ import requests
 from dotenv import load_dotenv
 from fastmcp import FastMCP
 
-# Load .env file for local testing (Render uses dashboard env vars instead)
+# Load .env for local tests (Render ignores this, uses its dashboard vars)
 load_dotenv()
 
-# Get secrets from environment
 SEAM_API_KEY = os.getenv("SEAM_API_KEY")
 DEVICE_ID = os.getenv("DEVICE_ID")
 
-# Create the MCP server
-mcp = FastMCP(
-    name="Yale Linus Lock Control",
-    version="1.0.0",
-    description="Lock and unlock your Yale Linus smart lock using Seam API"
-)
+# Create server – ONLY name is allowed here!
+mcp = FastMCP("Yale Linus Lock Control")
 
-# Optional: Warn if secrets are missing (helps debugging)
+# Print warning if secrets missing (shows in Render logs for debug)
 if not SEAM_API_KEY or not DEVICE_ID:
-    print("WARNING: SEAM_API_KEY and/or DEVICE_ID are not set. Tools will fail until you add them in Render dashboard.")
+    print("WARNING: Missing SEAM_API_KEY or DEVICE_ID env vars – add them in Render dashboard!")
 
 @mcp.tool()
 async def lock_door() -> str:
     """Locks the Yale Linus door."""
     if not SEAM_API_KEY or not DEVICE_ID:
-        raise ValueError("SEAM_API_KEY and DEVICE_ID must be configured in environment variables.")
+        raise ValueError("SEAM_API_KEY and DEVICE_ID must be set in environment variables.")
     
     url = "https://connect.getseam.com/locks/lock_door"
     headers = {
@@ -40,16 +35,16 @@ async def lock_door() -> str:
         return "Door locked successfully."
     else:
         try:
-            error_msg = response.json().get("error", {}).get("message", response.text)
+            error = response.json().get("error", {}).get("message", response.text)
         except:
-            error_msg = response.text
-        raise ValueError(f"Lock failed: {response.status_code} - {error_msg}")
+            error = response.text
+        raise ValueError(f"Lock failed ({response.status_code}): {error}")
 
 @mcp.tool()
 async def unlock_door() -> str:
     """Unlocks the Yale Linus door."""
     if not SEAM_API_KEY or not DEVICE_ID:
-        raise ValueError("SEAM_API_KEY and DEVICE_ID must be configured in environment variables.")
+        raise ValueError("SEAM_API_KEY and DEVICE_ID must be set in environment variables.")
     
     url = "https://connect.getseam.com/locks/unlock_door"
     headers = {
@@ -63,19 +58,16 @@ async def unlock_door() -> str:
         return "Door unlocked successfully."
     else:
         try:
-            error_msg = response.json().get("error", {}).get("message", response.text)
+            error = response.json().get("error", {}).get("message", response.text)
         except:
-            error_msg = response.text
-        raise ValueError(f"Unlock failed: {response.status_code} - {error_msg}")
+            error = response.text
+        raise ValueError(f"Unlock failed ({response.status_code}): {error}")
 
-# ────────────────────────────────────────────────
-# Do NOT change anything below this line
-# This is what makes the server run on Render / Heroku / Vercel etc.
-# ────────────────────────────────────────────────
+# Keep this unchanged – it's the Render HTTP server setup
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     host = "0.0.0.0"
-    print(f"Starting MCP server on {host}:{port}")
+    print(f"Starting server on {host}:{port}")
     mcp.run(
         transport="http",
         host=host,
