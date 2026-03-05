@@ -1,8 +1,8 @@
-# MCP Server Template
+# seam-mcp
 
-A minimal [FastMCP](https://github.com/jlowin/fastmcp) server template for Render deployment with streamable HTTP transport.
+An MCP integration for AI agents to connect to smart home accessories linked to Seam.
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/InteractionCo/mcp-server-template)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/aaronjoyvictor/seam-mcp)
 
 ## Local Development
 
@@ -12,7 +12,7 @@ Fork the repo, then run:
 
 ```bash
 git clone <your-repo-url>
-cd mcp-server-template
+cd seam-mcp
 conda create -n mcp-server python=3.13
 conda activate mcp-server
 pip install -r requirements.txt
@@ -45,7 +45,7 @@ Your server will be available at `https://your-service-name.onrender.com/mcp` (N
 ## Poke Setup
 
 You can connect your MCP server to Poke at (poke.com/settings/connections)[poke.com/settings/connections].
-To test the connection explitly, ask poke somethink like `Tell the subagent to use the "{connection name}" integration's "{tool name}" tool`.
+To test the connection explicitly, ask poke something like `Tell the subagent to use the "{connection name}" integration's "{tool name}" tool`.
 If you run into persistent issues of poke not calling the right MCP (e.g. after you've renamed the connection) you may send `clearhistory` to poke to delete all message history and start fresh.
 We're working hard on improving the integration use of Poke :)
 
