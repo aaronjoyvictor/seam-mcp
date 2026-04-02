@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import os
-import requests
+import httpx
 from dotenv import load_dotenv
 from fastmcp import FastMCP
 
@@ -30,13 +30,14 @@ async def lock_door() -> str:
     }
     payload = {"device_id": DEVICE_ID}
     
-    response = requests.post(url, headers=headers, json=payload)
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=payload)
     if response.status_code in (200, 201):
         return "Door locked successfully."
     else:
         try:
             error = response.json().get("error", {}).get("message", response.text)
-        except:
+        except Exception:
             error = response.text
         raise ValueError(f"Lock failed ({response.status_code}): {error}")
 
@@ -53,13 +54,14 @@ async def unlock_door() -> str:
     }
     payload = {"device_id": DEVICE_ID}
     
-    response = requests.post(url, headers=headers, json=payload)
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=payload)
     if response.status_code in (200, 201):
         return "Door unlocked successfully."
     else:
         try:
             error = response.json().get("error", {}).get("message", response.text)
-        except:
+        except Exception:
             error = response.text
         raise ValueError(f"Unlock failed ({response.status_code}): {error}")
 
@@ -67,7 +69,7 @@ async def unlock_door() -> str:
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     host = "0.0.0.0"
-    print(f"Starting server on {host}:{port}")
+    print(f"Starting MCP server on {host}:{port}")
     mcp.run(
         transport="http",
         host=host,
