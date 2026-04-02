@@ -13,6 +13,15 @@ DEVICE_ID = os.getenv("DEVICE_ID")
 # Create server – ONLY name is allowed here!
 mcp = FastMCP("Yale Linus Lock Control")
 
+# Shared async HTTP client (reused across requests for connection pooling)
+_http_client: httpx.AsyncClient | None = None
+
+def _get_client() -> httpx.AsyncClient:
+    global _http_client
+    if _http_client is None or _http_client.is_closed:
+        _http_client = httpx.AsyncClient(timeout=30.0)
+    return _http_client
+
 # Print warning if secrets missing (shows in Render logs for debug)
 if not SEAM_API_KEY or not DEVICE_ID:
     print("WARNING: Missing SEAM_API_KEY or DEVICE_ID env vars – add them in Render dashboard!")
@@ -30,8 +39,8 @@ async def lock_door() -> str:
     }
     payload = {"device_id": DEVICE_ID}
     
-    async with httpx.AsyncClient() as client:
-        response = await client.post(url, headers=headers, json=payload)
+    client = _get_client()
+    response = await client.post(url, headers=headers, json=payload)
     if response.status_code in (200, 201):
         return "Door locked successfully."
     else:
@@ -54,8 +63,8 @@ async def unlock_door() -> str:
     }
     payload = {"device_id": DEVICE_ID}
     
-    async with httpx.AsyncClient() as client:
-        response = await client.post(url, headers=headers, json=payload)
+    client = _get_client()
+    response = await client.post(url, headers=headers, json=payload)
     if response.status_code in (200, 201):
         return "Door unlocked successfully."
     else:
